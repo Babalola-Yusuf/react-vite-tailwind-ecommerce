@@ -8,22 +8,33 @@ const initialState = {
 };
 
 function reducer(state, action) {
+  let updatedProducts;
   switch (action.type) {
-    case 'ADD_PRODUCT':
-      const updated = [...state.products, action.payload];
-      localStorage.setItem('products', JSON.stringify(updated));
-      return { products: updated };
-    case 'DELETE_PRODUCT':
-      const filtered = state.products.filter(p => p.id !== action.payload);
-      localStorage.setItem('products', JSON.stringify(filtered));
-      return { products: filtered };
+    case 'ADD_PRODUCT': {
+      updatedProducts = [...state.products, { ...action.payload, id: Date.now() }];
+      return { products: updatedProducts };
+    }
+    case 'REMOVE_PRODUCT': {
+      updatedProducts = state.products.filter(p => p.id !== action.payload);
+      return { products: updatedProducts };
+    }
+    case 'UPDATE_PRODUCT': {
+      updatedProducts = state.products.map(p =>
+        p.id === action.payload.id ? { ...p, ...action.payload } : p
+      );
+      return { products: updatedProducts };
+    }
+    case 'CLEAR_PRODUCTS': {
+      return { products: [] };
+    }
     default:
       return state;
   }
 }
 
-export const ProductsProvider = ({ children }) => {
+export const ProductProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
   useEffect(() => {
     localStorage.setItem('products', JSON.stringify(state.products));
   }, [state.products]);
