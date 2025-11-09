@@ -1,13 +1,14 @@
 // FILE: src/pages/Admin.jsx
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import ProductContext from '../context/ProductContext';
 
 export default function Admin() {
   const { state, dispatch } = useContext(ProductContext);
+  const formRef = useRef(null);
+  const nameInputRef = useRef(null);
 
   const [product, setProduct] = useState({
-    id: null,
     name: '',
     price: '',
     description: '',
@@ -15,15 +16,15 @@ export default function Admin() {
     category: '',
   });
 
-  const [preview, setPreview] = useState(null);
-  const [editing, setEditing] = useState(false);
-
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [newCategory, setNewCategory] = useState('');
+  const [highlightForm, setHighlightForm] = useState(false);
   const [categories, setCategories] = useState(
     JSON.parse(localStorage.getItem('categories')) || ['Electronics', 'Clothing', 'Accessories']
   );
 
-  // Persist category list
+  // Save categories persistently
   const updateCategories = (updated) => {
     setCategories(updated);
     localStorage.setItem('categories', JSON.stringify(updated));
@@ -32,52 +33,63 @@ export default function Admin() {
   const handleAddCategory = () => {
     if (newCategory.trim() === '') return toast.error('Category name cannot be empty');
     if (categories.includes(newCategory.trim())) return toast.error('Category already exists');
-
     const updated = [...categories, newCategory.trim()];
     updateCategories(updated);
     toast.success(`Added category "${newCategory}"`);
     setNewCategory('');
   };
 
-  // ✅ Handle image uploads (from PC)
+  // Handle image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result);
-      setProduct({ ...product, image: reader.result });
-    };
-    reader.readAsDataURL(file);
+    if (file) {
+      const localUrl = URL.createObjectURL(file);
+      setImagePreview(localUrl);
+      setProduct({ ...product, image: localUrl });
+    }
   };
 
-  // ✅ Add or Update Product
-  const handleSaveProduct = (e) => {
+  const handleAddProduct = (e) => {
     e.preventDefault();
     if (!product.name || !product.price || !product.category)
       return toast.error('Please fill in all required fields');
 
-    if (editing) {
-      dispatch({ type: 'UPDATE_PRODUCT', payload: product });
-      toast.success('Product updated successfully');
-    } else {
+    if (editingProduct) {
+      // Update existing product
       dispatch({
-        type: 'ADD_PRODUCT',
-        payload: { ...product, id: Date.now(), price: parseFloat(product.price) },
+        type: 'UPDATE_PRODUCT',
+        payload: { ...product, id: editingProduct.id, images: [product.image] },
       });
+      toast.success('Product updated successfully');
+      setEditingProduct(null);
+    } else {
+      // Add new product
+      const newProduct = {
+        ...product,
+        price: parseFloat(product.price),
+        id: Date.now(),
+        images: [product.image],
+      };
+      dispatch({ type: 'ADD_PRODUCT', payload: newProduct });
       toast.success('Product added successfully');
     }
 
-    setProduct({ id: null, name: '', price: '', description: '', image: '', category: '' });
-    setPreview(null);
-    setEditing(false);
+    setProduct({ name: '', price: '', description: '', image: '', category: '' });
+    setImagePreview('');
   };
 
-  // ✅ Edit existing product
   const handleEditProduct = (p) => {
+    setEditingProduct(p);
     setProduct(p);
-    setPreview(p.image);
-    setEditing(true);
+    setImagePreview(p.image || p.images?.[0] || '');
+
+    // Smooth scroll and highlight form
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      nameInputRef.current?.focus();
+      setHighlightForm(true);
+      setTimeout(() => setHighlightForm(false), 2000);
+    }, 200);
   };
 
   const handleDeleteProduct = (id) => {
@@ -85,23 +97,24 @@ export default function Admin() {
     toast.success('Product deleted');
   };
 
-  const handleCancelEdit = () => {
-    setEditing(false);
-    setProduct({ id: null, name: '', price: '', description: '', image: '', category: '' });
-    setPreview(null);
-  };
-
   return (
     <div className="max-w-5xl mx-auto mt-10 bg-white shadow-md rounded-xl p-6">
       <h1 className="text-3xl font-bold mb-6 text-center">Admin Dashboard</h1>
 
-      {/* Add / Edit Product */}
-      <form onSubmit={handleSaveProduct} className="space-y-4">
+      {/* Add or Edit Product */}
+      <form
+        ref={formRef}
+        onSubmit={handleAddProduct}
+        className={`space-y-4 border-2 rounded-xl p-4 transition-all duration-500 ${
+          highlightForm ? 'border-yellow-400 shadow-md shadow-yellow-100' : 'border-transparent'
+        }`}
+      >
         <h2 className="text-xl font-semibold">
-          {editing ? 'Edit Product' : 'Add New Product'}
+          {editingProduct ? 'Edit Product' : 'Add New Product'}
         </h2>
 
         <input
+          ref={nameInputRef}
           type="text"
           placeholder="Product Name"
           value={product.name}
@@ -126,21 +139,38 @@ export default function Admin() {
           className="border rounded-lg p-3 w-full"
         />
 
-        {/* Local image upload */}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="border rounded-lg p-3 w-full"
-        />
-
-        {preview && (
-          <img
-            src={preview}
-            alt="Preview"
-            className="w-32 h-32 object-cover rounded-md border"
-          />
-        )}
+        <div className="flex flex-col md:flex-row items-center gap-4">
+          <div className="flex-1 w-full">
+            <input
+              type="text"
+              placeholder="Image URL (optional)"
+              value={product.image}
+              onChange={(e) => {
+                setProduct({ ...product, image: e.target.value });
+                setImagePreview(e.target.value);
+              }}
+              className="border rounded-lg p-3 w-full"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="cursor-pointer bg-gray-100 border px-4 py-2 rounded-lg hover:bg-gray-200 transition">
+              Upload
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
+            {imagePreview && (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-16 h-16 object-cover rounded border"
+              />
+            )}
+          </div>
+        </div>
 
         <select
           value={product.category}
@@ -156,18 +186,22 @@ export default function Admin() {
           ))}
         </select>
 
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <button
             type="submit"
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
           >
-            {editing ? 'Update Product' : 'Add Product'}
+            {editingProduct ? 'Save Changes' : 'Add Product'}
           </button>
-          {editing && (
+          {editingProduct && (
             <button
               type="button"
-              onClick={handleCancelEdit}
-              className="bg-gray-400 text-white px-6 py-3 rounded-lg hover:bg-gray-500 transition"
+              onClick={() => {
+                setEditingProduct(null);
+                setProduct({ name: '', price: '', description: '', image: '', category: '' });
+                setImagePreview('');
+              }}
+              className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition"
             >
               Cancel
             </button>
@@ -209,7 +243,7 @@ export default function Admin() {
               >
                 <div>
                   <img
-                    src={p.image || '/placeholder.png'}
+                    src={p.image || p.images?.[0] || '/placeholder.png'}
                     alt={p.name}
                     className="w-full h-40 object-cover rounded-md mb-3"
                   />
@@ -220,13 +254,13 @@ export default function Admin() {
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => handleEditProduct(p)}
-                    className="bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition"
+                    className="flex-1 bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDeleteProduct(p.id)}
-                    className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
+                    className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
                   >
                     Delete
                   </button>

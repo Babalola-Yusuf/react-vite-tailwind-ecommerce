@@ -20,7 +20,9 @@ export default function App() {
         <CartProvider>
           <WishlistProvider>
             <Navbar />
-            <Breadcrumbs /> {/* ✅ Breadcrumbs should be here */}
+            <div className='max-w-7xl mx-auto px-4'>
+              <Breadcrumbs /> {/* ✅ Breadcrumbs should be here */}
+            </div>
             <main className="p-4 min-h-screen bg-gray-50">
               <Routes>
                 <Route path="/" element={<Home />} />
