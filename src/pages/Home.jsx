@@ -1,44 +1,83 @@
-// FILE: src/pages/Home.jsx
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Heart } from 'lucide-react';
 import ProductContext from '../context/ProductContext';
+import WishlistContext from '../context/WishlistContext';
 
 export default function Home() {
   const { state } = useContext(ProductContext);
+  const { wishlist, toggleWishlist } = useContext(WishlistContext) || { wishlist: [], toggleWishlist: () => {} };
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  // Derive categories dynamically from products
+  const categories = ['All', ...new Set(state.products.map(p => p.category || 'Uncategorized'))];
+
+  // Filtered product list
+  const filteredProducts = state.products.filter(p => {
+    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold text-center mb-8">Our Products</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {state.products.length === 0 && (
-          <p className="col-span-full text-center text-lg">No products available yet.</p>
-        )}
-        {state.products.map(product => (
-          <div
-            key={product.id}
-            className="bg-white shadow-md rounded-lg overflow-hidden hover:shadow-xl transition duration-200"
-          >
-            <Link to={`/product/${product.id}`}>
-              <img
-                src={product.images?.[0] || '/placeholder.png'}
-                alt={product.name}
-                className="h-48 w-full object-cover"
-              />
-            </Link>
-            <div className="p-4">
-              <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-              <p className="text-gray-700 mb-4 truncate">{product.description}</p>
-              <p className="text-lg font-bold text-blue-600 mb-4">${product.price}</p>
-              <Link
-                to={`/product/${product.id}`}
-                className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
-              >
-                View Details
-              </Link>
-            </div>
-          </div>
-        ))}
+    <div className="space-y-8">
+      {/* Search and Category Filter */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+        <input
+          type="text"
+          placeholder="Search products..."
+          className="border p-2 rounded w-full md:w-1/2"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <select
+          className="border p-2 rounded w-full md:w-1/4"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          {categories.map(cat => (
+            <option key={cat}>{cat}</option>
+          ))}
+        </select>
       </div>
+
+      {/* Product Grid */}
+      {filteredProducts.length === 0 ? (
+        <p className="text-center text-gray-600 mt-10">No products found.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredProducts.map(product => {
+            const isInWishlist = wishlist?.some(item => item.id === product.id);
+
+            return (
+              <div key={product.id} className="relative bg-white p-4 shadow-md rounded-lg hover:shadow-lg transition">
+                {/* Wishlist Heart Icon */}
+                <button
+                  onClick={() => toggleWishlist(product)}
+                  className={`absolute top-2 right-2 p-2 rounded-full ${
+                    isInWishlist ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                  }`}
+                >
+                  <Heart className="w-5 h-5" />
+                </button>
+
+                <Link to={`/product/${product.id}`}>
+                  <img
+                    src={product.image || '/placeholder.png'}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded mb-4"
+                  />
+                  <h3 className="text-lg font-semibold">{product.name}</h3>
+                  <p className="text-gray-600">${product.price}</p>
+                  <p className="text-sm text-gray-500 mt-1">{product.category || 'Uncategorized'}</p>
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

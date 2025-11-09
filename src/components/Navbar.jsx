@@ -1,30 +1,33 @@
 // FILE: src/components/Navbar.jsx
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
 import CartContext from '../context/CartContext';
+import WishlistContext from '../context/WishlistContext';
+import { ShoppingCart, Heart } from 'lucide-react';
 
 export default function Navbar() {
-  const { state } = useContext(CartContext);
-  const itemCount = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+  const { state: cartState } = useContext(CartContext);
+  const { state: wishlistState } = useContext(WishlistContext);
+  const cartCount = (cartState?.totals?.count) || (cartState.cart ? cartState.cart.reduce((s, i) => s + (i.quantity || 0), 0) : 0);
+  const wishlistCount = wishlistState?.wishlist?.length || 0;
 
   return (
-    <nav className="bg-blue-600 text-white shadow-md">
-      <div className="container mx-auto flex justify-between items-center p-4">
-        <Link to="/" className="text-2xl font-bold">ShopEasy</Link>
-        <div className="flex gap-6 items-center">
-          <Link to="/" className="hover:text-gray-200">Home</Link>
-          <Link to="/admin" className="hover:text-gray-200">Admin</Link>
-          <Link to="/cart" className="relative flex items-center hover:text-gray-200">
-            <ShoppingCart size={22} />
-            {itemCount > 0 && (
-              <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
-                {itemCount}
-              </span>
-            )}
+    <header className="bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="text-xl font-bold">MyStore</Link>
+        <nav className="flex items-center gap-4">
+          <Link to="/" className="hover:text-blue-600">Home</Link>
+          <Link to="/admin" className="hover:text-blue-600">Admin</Link>
+          <Link to="/wishlist" className="relative">
+            <Heart />
+            {wishlistCount > 0 && <span className="absolute -top-2 -right-3 bg-red-500 text-white rounded-full text-xs px-1">{wishlistCount}</span>}
           </Link>
-        </div>
+          <Link to="/cart" className="relative">
+            <ShoppingCart />
+            {cartCount > 0 && <span className="absolute -top-2 -right-3 bg-blue-600 text-white rounded-full text-xs px-1">{cartCount}</span>}
+          </Link>
+        </nav>
       </div>
-    </nav>
+    </header>
   );
 }

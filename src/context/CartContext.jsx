@@ -19,18 +19,23 @@ function reducer(state, action) {
   let updatedCart;
   switch (action.type) {
     case 'ADD_TO_CART': {
-      const existing = state.cart.find(item => item.id === action.payload.id);
-      if (existing) {
-        updatedCart = state.cart.map(item =>
-          item.id === action.payload.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-        toast.success('Increased quantity in cart');
-      } else {
-        updatedCart = [...state.cart, { ...action.payload, quantity: 1 }];
-        toast.success('Added to cart');
-      }
-      return { ...state, cart: updatedCart, totals: calculateTotals(updatedCart) };
-    }
+  const newItem = {
+    ...action.payload,
+    images: action.payload.images || (action.payload.image ? [action.payload.image] : []),
+  };
+  const existing = state.cart.find(item => item.id === newItem.id);
+  if (existing) {
+    updatedCart = state.cart.map(item =>
+      item.id === newItem.id ? { ...item, quantity: item.quantity + 1 } : item
+    );
+    toast.success('Increased quantity in cart');
+  } else {
+    updatedCart = [...state.cart, { ...newItem, quantity: 1 }];
+    toast.success('Added to cart');
+  }
+  return { ...state, cart: updatedCart, totals: calculateTotals(updatedCart) };
+}
+
     case 'REMOVE_FROM_CART': {
       updatedCart = state.cart.filter(item => item.id !== action.payload);
       toast.error('Removed from cart');

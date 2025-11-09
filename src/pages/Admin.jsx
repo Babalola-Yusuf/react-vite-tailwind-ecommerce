@@ -1,164 +1,235 @@
 // FILE: src/pages/Admin.jsx
 import React, { useContext, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-hot-toast';
 import ProductContext from '../context/ProductContext';
 
 export default function Admin() {
   const { state, dispatch } = useContext(ProductContext);
-  const [form, setForm] = useState({ id: null, name: '', price: '', description: '', imageUrl: '' });
-  const [previewList, setPreviewList] = useState([]);
-  const [editingId, setEditingId] = useState(null);
 
-  const handleChange = e => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+  const [product, setProduct] = useState({
+    id: null,
+    name: '',
+    price: '',
+    description: '',
+    image: '',
+    category: '',
+  });
+
+  const [preview, setPreview] = useState(null);
+  const [editing, setEditing] = useState(false);
+
+  const [newCategory, setNewCategory] = useState('');
+  const [categories, setCategories] = useState(
+    JSON.parse(localStorage.getItem('categories')) || ['Electronics', 'Clothing', 'Accessories']
+  );
+
+  // Persist category list
+  const updateCategories = (updated) => {
+    setCategories(updated);
+    localStorage.setItem('categories', JSON.stringify(updated));
   };
 
-  const compressImage = (file, callback) => {
+  const handleAddCategory = () => {
+    if (newCategory.trim() === '') return toast.error('Category name cannot be empty');
+    if (categories.includes(newCategory.trim())) return toast.error('Category already exists');
+
+    const updated = [...categories, newCategory.trim()];
+    updateCategories(updated);
+    toast.success(`Added category "${newCategory}"`);
+    setNewCategory('');
+  };
+
+  // ✅ Handle image uploads (from PC)
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
     const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.src = e.target.result;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const MAX_WIDTH = 600;
-        const scaleSize = MAX_WIDTH / img.width;
-        canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scaleSize;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressedData = canvas.toDataURL('image/jpeg', 0.7);
-        callback(compressedData);
-      };
+    reader.onloadend = () => {
+      setPreview(reader.result);
+      setProduct({ ...product, image: reader.result });
     };
     reader.readAsDataURL(file);
   };
 
-  const handleImageChange = e => {
-    const files = Array.from(e.target.files);
-    files.forEach(file => {
-      compressImage(file, compressed => {
-        setPreviewList(prev => [...prev, compressed]);
-      });
-    });
-  };
-
-  const removePreview = index => {
-    setPreviewList(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = e => {
+  // ✅ Add or Update Product
+  const handleSaveProduct = (e) => {
     e.preventDefault();
-    const imageSources = [...previewList, ...(form.imageUrl ? [form.imageUrl] : [])];
+    if (!product.name || !product.price || !product.category)
+      return toast.error('Please fill in all required fields');
 
-    if (editingId) {
-      const updatedProduct = { ...form, id: editingId, images: imageSources };
-      dispatch({ type: 'UPDATE_PRODUCT', payload: updatedProduct });
-      toast.success('✅ Product updated successfully!');
-      setEditingId(null);
+    if (editing) {
+      dispatch({ type: 'UPDATE_PRODUCT', payload: product });
+      toast.success('Product updated successfully');
     } else {
-      const newProduct = { ...form, id: Date.now(), images: imageSources };
-      dispatch({ type: 'ADD_PRODUCT', payload: newProduct });
-      toast.success('🛒 Product added successfully!');
+      dispatch({
+        type: 'ADD_PRODUCT',
+        payload: { ...product, id: Date.now(), price: parseFloat(product.price) },
+      });
+      toast.success('Product added successfully');
     }
 
-    setForm({ id: null, name: '', price: '', description: '', imageUrl: '' });
-    setPreviewList([]);
+    setProduct({ id: null, name: '', price: '', description: '', image: '', category: '' });
+    setPreview(null);
+    setEditing(false);
   };
 
-  const handleEdit = id => {
-    const product = state.products.find(p => p.id === id);
-    if (!product) return;
-    setForm({ id: product.id, name: product.name, price: product.price, description: product.description, imageUrl: product.images?.[0] || '' });
-    setPreviewList(product.images || []);
-    setEditingId(product.id);
-    toast.info('✏️ Editing product...');
+  // ✅ Edit existing product
+  const handleEditProduct = (p) => {
+    setProduct(p);
+    setPreview(p.image);
+    setEditing(true);
   };
 
-  const handleDelete = id => {
-    if (confirm('Are you sure you want to delete this product?')) {
-      dispatch({ type: 'REMOVE_PRODUCT', payload: id });
-      toast.error('🗑️ Product deleted successfully!');
-    }
+  const handleDeleteProduct = (id) => {
+    dispatch({ type: 'REMOVE_PRODUCT', payload: id });
+    toast.success('Product deleted');
   };
 
-  const clearAllProducts = () => {
-    if (confirm('Are you sure you want to clear all products?')) {
-      dispatch({ type: 'CLEAR_PRODUCTS' });
-      toast.warn('🧹 All products cleared!');
-    }
+  const handleCancelEdit = () => {
+    setEditing(false);
+    setProduct({ id: null, name: '', price: '', description: '', image: '', category: '' });
+    setPreview(null);
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white shadow-lg p-6 rounded-lg">
-      <ToastContainer position="top-right" autoClose={2000} />
-      <h1 className="text-2xl font-bold mb-6 text-center">Admin Dashboard</h1>
+    <div className="max-w-5xl mx-auto mt-10 bg-white shadow-md rounded-xl p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center">Admin Dashboard</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-        <h2 className="text-xl font-semibold mb-2">{editingId ? 'Edit Product' : 'Add New Product'}</h2>
-        <div>
-          <label className="block font-semibold mb-1">Product Name</label>
-          <input type="text" name="name" value={form.name} onChange={handleChange} className="w-full border rounded-lg p-2" required />
-        </div>
-        <div>
-          <label className="block font-semibold mb-1">Price ($)</label>
-          <input type="number" name="price" value={form.price} onChange={handleChange} className="w-full border rounded-lg p-2" required />
-        </div>
-        <div>
-          <label className="block font-semibold mb-1">Description</label>
-          <textarea name="description" value={form.description} onChange={handleChange} className="w-full border rounded-lg p-2" />
-        </div>
-        <div>
-          <label className="block font-semibold mb-1">Upload Images (from PC)</label>
-          <input type="file" accept="image/*" multiple onChange={handleImageChange} className="w-full border rounded-lg p-2" />
-        </div>
-        <div>
-          <label className="block font-semibold mb-1">Or Enter Image URL</label>
-          <input type="url" name="imageUrl" value={form.imageUrl} onChange={handleChange} className="w-full border rounded-lg p-2" placeholder="https://example.com/product.jpg" />
-        </div>
+      {/* Add / Edit Product */}
+      <form onSubmit={handleSaveProduct} className="space-y-4">
+        <h2 className="text-xl font-semibold">
+          {editing ? 'Edit Product' : 'Add New Product'}
+        </h2>
 
-        {(previewList.length > 0 || form.imageUrl) && (
-          <div className="flex flex-wrap gap-3 mt-2 border-t pt-3">
-            {previewList.map((src, index) => (
-              <div key={index} className="relative">
-                <img src={src} alt={`Preview ${index}`} className="h-24 w-24 object-cover rounded-lg border" />
-                <button type="button" onClick={() => removePreview(index)} className="absolute top-1 right-1 bg-red-600 text-white text-xs px-1 rounded">✕</button>
-              </div>
-            ))}
-            {form.imageUrl && !previewList.includes(form.imageUrl) && (
-              <img src={form.imageUrl} alt="URL Preview" className="h-24 w-24 object-cover rounded-lg border" />
-            )}
-          </div>
+        <input
+          type="text"
+          placeholder="Product Name"
+          value={product.name}
+          onChange={(e) => setProduct({ ...product, name: e.target.value })}
+          className="border rounded-lg p-3 w-full"
+          required
+        />
+
+        <input
+          type="number"
+          placeholder="Price"
+          value={product.price}
+          onChange={(e) => setProduct({ ...product, price: e.target.value })}
+          className="border rounded-lg p-3 w-full"
+          required
+        />
+
+        <textarea
+          placeholder="Description"
+          value={product.description}
+          onChange={(e) => setProduct({ ...product, description: e.target.value })}
+          className="border rounded-lg p-3 w-full"
+        />
+
+        {/* Local image upload */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="border rounded-lg p-3 w-full"
+        />
+
+        {preview && (
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-32 h-32 object-cover rounded-md border"
+          />
         )}
 
-        <button type="submit" className={`w-full py-2 rounded-lg text-white ${editingId ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}>
-          {editingId ? 'Update Product' : 'Add Product'}
-        </button>
+        <select
+          value={product.category}
+          onChange={(e) => setProduct({ ...product, category: e.target.value })}
+          className="border rounded-lg p-3 w-full"
+          required
+        >
+          <option value="">Select Category</option>
+          {categories.map((c, i) => (
+            <option key={i} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+
+        <div className="flex gap-4">
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+          >
+            {editing ? 'Update Product' : 'Add Product'}
+          </button>
+          {editing && (
+            <button
+              type="button"
+              onClick={handleCancelEdit}
+              className="bg-gray-400 text-white px-6 py-3 rounded-lg hover:bg-gray-500 transition"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </form>
 
-      <div className="flex justify-end mb-4">
-        <button onClick={clearAllProducts} className="bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-700">Clear All Products</button>
+      {/* Add Category */}
+      <div className="mt-8 border-t pt-6">
+        <h2 className="text-xl font-semibold mb-4">Add New Category</h2>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            placeholder="New category name"
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            className="border rounded-lg p-3 w-full"
+          />
+          <button
+            onClick={handleAddCategory}
+            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+          >
+            Add Category
+          </button>
+        </div>
       </div>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-3">Product List</h2>
+      {/* Product List */}
+      <div className="mt-10 border-t pt-6">
+        <h2 className="text-xl font-semibold mb-4">Product List</h2>
         {state.products.length === 0 ? (
-          <p className="text-gray-600">No products added yet.</p>
+          <p>No products available.</p>
         ) : (
-          <div className="space-y-4">
-            {state.products.map(product => (
-              <div key={product.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
-                <div className="flex items-center gap-4">
-                  <img src={product.images?.[0] || '/placeholder.png'} alt={product.name} className="h-16 w-16 object-cover rounded" />
-                  <div>
-                    <h3 className="font-semibold">{product.name}</h3>
-                    <p className="text-sm text-gray-700">${product.price}</p>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {state.products.map((p) => (
+              <div
+                key={p.id}
+                className="bg-gray-50 border rounded-lg p-4 shadow-sm flex flex-col justify-between"
+              >
+                <div>
+                  <img
+                    src={p.image || '/placeholder.png'}
+                    alt={p.name}
+                    className="w-full h-40 object-cover rounded-md mb-3"
+                  />
+                  <h3 className="font-semibold">{p.name}</h3>
+                  <p className="text-sm text-gray-600">{p.category}</p>
+                  <p className="text-blue-600 font-bold">${p.price}</p>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => handleEdit(product.id)} className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
-                  <button onClick={() => handleDelete(product.id)} className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => handleEditProduct(p)}
+                    className="bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-yellow-600 transition"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteProduct(p.id)}
+                    className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
