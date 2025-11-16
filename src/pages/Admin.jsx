@@ -39,15 +39,20 @@ export default function Admin() {
     setNewCategory('');
   };
 
-  // Handle image upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const localUrl = URL.createObjectURL(file);
-      setImagePreview(localUrl);
-      setProduct({ ...product, image: localUrl });
-    }
-  };
+ // Handle image upload (Base64)
+const handleImageUpload = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      setImagePreview(base64String);
+      setProduct({ ...product, image: base64String });
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
 
   const handleAddProduct = (e) => {
     e.preventDefault();

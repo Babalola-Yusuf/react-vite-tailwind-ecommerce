@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Breadcrumbs from './components/Breadcrumbs'; // ✅ ensure this line exists
 import Home from './pages/Home';
 import Cart from './pages/Cart';
@@ -33,6 +34,7 @@ export default function App() {
                 <Route path="/wishlist" element={<Wishlist />} />
               </Routes>
             </main>
+            <Footer />
             <Toaster position="top-right" />
           </WishlistProvider>
         </CartProvider>
