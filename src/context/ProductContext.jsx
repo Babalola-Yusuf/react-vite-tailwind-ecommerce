@@ -6,8 +6,14 @@ const ProductContext = createContext();
 
 const initialState = {
   products: JSON.parse(localStorage.getItem('products')) || [],
-  categories: JSON.parse(localStorage.getItem('categories')) || ['General'],
+  categories: JSON.parse(localStorage.getItem('categories')) || [
+    'General',
+    'Electronics',
+    'Clothing',
+    'Accessories'
+  ],
 };
+
 
 function reducer(state, action) {
   let updatedProducts;
