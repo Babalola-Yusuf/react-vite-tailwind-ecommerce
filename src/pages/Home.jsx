@@ -18,6 +18,15 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
+  const closeFiltersOnMobile = () => {
+  if (window.innerWidth < 1024) {
+    setShowFilters(false);
+  }
+};
+
+
   const prices = state.products.map(p => Number(p.price) || 0);
 
   const minProductPrice = prices.length ? Math.min(...prices) : 0;
@@ -122,7 +131,7 @@ export default function Home() {
             Shop the Latest Products
           </h1>
           <p className="mt-3 text-white/90 max-w-xl">
-            Stay ahead with our newest arrivals
+            Stay ahead with our newest arrivals...
           </p>
         </div>
       </div>
@@ -186,24 +195,71 @@ export default function Home() {
           </Swiper>
         </div>
       )}
+{/* Mobile filter toggle */}
+<div className="lg:hidden flex justify-between items-center">
+  <button
+    onClick={() => setShowFilters(true)}
+    className="flex items-center gap-2 border px-4 py-2 rounded-lg text-sm"
+  >
+    Filters
+  </button>
+
+  <span className="text-sm text-gray-500">
+    {filteredProducts.length} items
+  </span>
+</div>
 
 {/* ===========================
     FILTER + PRODUCTS LAYOUT
 =========================== */}
 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+  {/* Mobile backdrop */}
+{showFilters && (
+  <div
+    className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+    onClick={() => setShowFilters(false)}
+  />
+)}
+
 {/* FILTER SIDEBAR */}
-<aside className="lg:col-span-1 bg-white border rounded-xl p-6 h-fit sticky top-24 space-y-6 shadow-sm">
+<aside
+  className={`
+    lg:col-span-1 bg-white border rounded-xl p-5 space-y-6
+    lg:sticky lg:top-24
+    fixed lg:static top-0 left-0 h-full lg:h-fit w-80 lg:w-auto
+    z-40
+    transform transition-transform duration-300
+    ${showFilters ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+  `}
+>
+{/* Mobile close */}
+<div className="flex justify-between items-center lg:hidden">
+  <h3 className="font-semibold">Filters</h3>
+  <button
+    onClick={() => setShowFilters(false)}
+    className="text-sm text-gray-500"
+  >
+    ✕
+  </button>
+</div>
 
   {/* Search */}
   <div>
     <h3 className="font-semibold mb-2">Search</h3>
-    <input
-      type="text"
-      placeholder="Search products..."
-      className="border p-2 rounded w-full"
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-    />
+<input
+  type="text"
+  placeholder="Search products..."
+  className="border p-2 rounded w-full"
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      closeFiltersOnMobile();
+    }
+  }}
+/>
+
   </div>
 
   {/* Categories */}
@@ -222,7 +278,11 @@ export default function Home() {
             name="category"
             value={cat}
             checked={selectedCategory === cat}
-            onChange={() => setSelectedCategory(cat)}
+           onChange={() => {
+  setSelectedCategory(cat);
+  closeFiltersOnMobile();
+}}
+
             className="accent-blue-600"
           />
 
@@ -254,7 +314,10 @@ export default function Home() {
     min={minProductPrice}
     max={maxProductPrice}
     value={maxPrice || maxProductPrice}
-    onChange={(e) => setMaxPrice(e.target.value)}
+    onChange={() => {
+  setSelectedCategory(cat);
+  closeFiltersOnMobile();
+}}
     className="w-full accent-blue-600"
   />
 
@@ -266,7 +329,11 @@ export default function Home() {
       className="border p-2 rounded w-full"
       value={minPrice}
       min={minProductPrice}
-      onChange={(e) => setMinPrice(e.target.value)}
+      onChange={(e) => {
+  setMinPrice(e.target.value);
+  closeFiltersOnMobile();
+}}
+
     />
     <input
       type="number"
@@ -274,7 +341,11 @@ export default function Home() {
       className="border p-2 rounded w-full"
       value={maxPrice}
       max={maxProductPrice}
-      onChange={(e) => setMaxPrice(e.target.value)}
+      onChange={(e) => {
+  setMaxPrice(e.target.value);
+  closeFiltersOnMobile();
+}}
+
     />
   </div>
 </div>
