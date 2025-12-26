@@ -4,6 +4,10 @@ import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import ProductContext from "../context/ProductContext";
 import WishlistContext from "../context/WishlistContext";
+import hero1 from "../assets/hero1.jpg";
+import hero2 from "../assets/hero2.jpg";
+import hero3 from "../assets/hero3.jpg";
+
 
 // Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -25,7 +29,6 @@ export default function Home() {
     setShowFilters(false);
   }
 };
-
 
   const prices = state.products.map(p => Number(p.price) || 0);
 
@@ -82,7 +85,7 @@ export default function Home() {
     <SwiperSlide>
       <div
         className="relative h-64 md:h-96 bg-cover bg-center"
-        style={{ backgroundImage: "url('/hero1.jpg')" }}
+        style={{ backgroundImage: `url(${hero1})` }}
       >
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/10" />
@@ -103,7 +106,7 @@ export default function Home() {
     <SwiperSlide>
       <div
         className="relative h-64 md:h-96 bg-cover bg-center"
-        style={{ backgroundImage: "url('/hero2.jpg')" }}
+        style={{ backgroundImage: `url(${hero2})`}}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/10" />
 
@@ -122,7 +125,7 @@ export default function Home() {
     <SwiperSlide>
       <div
         className="relative h-64 md:h-96 bg-cover bg-center"
-        style={{ backgroundImage: "url('/hero3.jpg')" }}
+        style={{ backgroundImage: `url(${hero3})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/10" />
 

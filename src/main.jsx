@@ -10,7 +10,7 @@ import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
+  <BrowserRouter basename="/react-vite-tailwind-ecommerce">
     <App />
   </BrowserRouter>
 );

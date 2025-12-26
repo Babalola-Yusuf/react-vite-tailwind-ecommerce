@@ -11,5 +11,5 @@ export default defineConfig({
       },
     }), tailwindcss(),
   ],
-  /* base: '/react-vite-tailwind-ecommerce/', */
+   base: '/react-vite-tailwind-ecommerce/',
 })
