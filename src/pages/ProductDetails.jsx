@@ -132,7 +132,13 @@ export default function ProductDetails() {
               </button>
 
               <button
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                        onClick={() => {
+          try {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          } catch {
+            window.scrollTo(0, 0);
+          }
+        }}
                 className="bg-gray-100 text-gray-800 py-2 px-3 rounded-lg hover:bg-gray-200 transition"
               >
                 Back to top
