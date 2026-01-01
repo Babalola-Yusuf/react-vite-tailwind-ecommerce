@@ -169,7 +169,11 @@ export default function Home() {
               <SwiperSlide key={product.id}>
                 <div className="relative bg-white p-4 shadow-md rounded-lg hover:shadow-xl transition">
                   <button
-                    onClick={() => toggleWishlist(product)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      toggleWishlist(product);
+                    }}
                     className={`absolute top-2 right-2 p-2 rounded-full ${
                       wishlist?.some((w) => w.id === product.id)
                         ? "text-red-500"
@@ -312,17 +316,18 @@ export default function Home() {
   </div>
 
   {/* Slider */}
-  <input
-    type="range"
-    min={minProductPrice}
-    max={maxProductPrice}
-    value={maxPrice || maxProductPrice}
-    onChange={() => {
-  setSelectedCategory(cat);
-  closeFiltersOnMobile();
-}}
-    className="w-full accent-blue-600"
-  />
+<input
+  type="range"
+  min={minProductPrice}
+  max={maxProductPrice}
+  value={maxPrice || maxProductPrice}
+  onChange={(e) => {
+    setMaxPrice(e.target.value);
+    closeFiltersOnMobile();
+  }}
+  className="w-full accent-blue-600"
+/>
+
 
   {/* Inputs */}
   <div className="flex gap-2 mt-3">
@@ -387,15 +392,17 @@ export default function Home() {
                 className="relative bg-white p-4 shadow-md rounded-lg hover:shadow-lg transition"
               >
                 <button
-                  onClick={() => toggleWishlist(product)}
-                  className={`absolute top-2 right-2 p-2 rounded-full ${
-                    isInWishlist
-                      ? "text-red-500"
-                      : "text-gray-400 hover:text-red-500"
-                  }`}
-                >
-                  <Heart className="w-5 h-5" />
-                </button>
+  onClick={(e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    toggleWishlist(product);
+  }}
+  className={`absolute top-2 right-2 p-2 rounded-full ${
+    isInWishlist ? "text-red-500" : "text-gray-400 hover:text-red-500"
+  }`}
+>
+  <Heart className="w-5 h-5" />
+</button>
 
                 <Link to={`/product/${product.id}`}>
                   <img
