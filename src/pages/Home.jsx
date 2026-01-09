@@ -170,8 +170,8 @@ export default function Home() {
                 <div className="relative bg-white p-4 shadow-md rounded-lg hover:shadow-xl transition">
                   <button
                     onClick={(e) => {
-                      e.stopPropagation();
                       e.preventDefault();
+                      e.stopPropagation();
                       toggleWishlist(product);
                     }}
                     className={`absolute top-2 right-2 p-2 rounded-full ${
@@ -393,8 +393,8 @@ export default function Home() {
               >
                 <button
   onClick={(e) => {
-    e.stopPropagation();
-    e.preventDefault();
+     e.preventDefault();  
+    e.stopPropagation(); 
     toggleWishlist(product);
   }}
   className={`absolute top-2 right-2 p-2 rounded-full ${
