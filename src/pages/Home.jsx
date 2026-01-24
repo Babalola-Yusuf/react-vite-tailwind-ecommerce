@@ -88,7 +88,7 @@ export default function Home() {
         style={{ backgroundImage: `url(${hero1})` }}
       >
         {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/10" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/10" />
 
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
@@ -108,7 +108,7 @@ export default function Home() {
         className="relative h-64 md:h-96 bg-cover bg-center"
         style={{ backgroundImage: `url(${hero2})`}}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/10" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/10" />
 
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
           <h1 className="text-3xl md:text-5xl font-extrabold text-white drop-shadow-lg">
@@ -127,7 +127,7 @@ export default function Home() {
         className="relative h-64 md:h-96 bg-cover bg-center"
         style={{ backgroundImage: `url(${hero3})` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/10" />
+        <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/10" />
 
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
           <h1 className="text-3xl md:text-5xl font-extrabold text-white drop-shadow-lg">
@@ -233,7 +233,7 @@ export default function Home() {
   className={`
     lg:col-span-1 bg-white border rounded-xl p-5 space-y-6
     lg:sticky lg:top-24
-    fixed lg:static top-0 left-0 h-full lg:h-fit w-80 lg:w-auto
+    fixed top-0 left-0 h-full lg:h-fit w-80 lg:w-auto
     z-40
     transform transition-transform duration-300
     ${showFilters ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
