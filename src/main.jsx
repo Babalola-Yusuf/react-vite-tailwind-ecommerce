@@ -18,4 +18,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <HashRouter/*  basename="/react-vite-tailwind-ecommerce" */>
     <App />
   </HashRouter>
-);
+)

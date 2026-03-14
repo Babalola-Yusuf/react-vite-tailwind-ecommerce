@@ -11,8 +11,7 @@ export default function ProductDetails() {
   const { id } = useParams();
   const { state: productState } = useContext(ProductContext);
   const { dispatch: cartDispatch } = useContext(CartContext);
-  const wishlistContext = useContext(WishlistContext) || {};
-  const { state: wishlistState = {}, toggleWishlist } = wishlistContext;
+  const { wishlist = [], toggleWishlist } = useContext(WishlistContext) || {};
 
   const product = productState.products.find(p => p.id === Number(id));
 
@@ -30,7 +29,7 @@ export default function ProductDetails() {
     return <div className="text-center mt-20 text-xl">Product not found.</div>;
   }
 
-  const isWishlisted = (wishlistState?.wishlist || []).some(item => item.id === product.id);
+  const isWishlisted = wishlist.some(item => item.id === product.id);
 
   const handleAddToCart = () => {
     cartDispatch({ type: 'ADD_TO_CART', payload: product });

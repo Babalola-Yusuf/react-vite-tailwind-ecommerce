@@ -1,6 +1,6 @@
 // FILE: src/App.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {  Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Breadcrumbs from './components/Breadcrumbs'; // ✅ ensure this line exists
