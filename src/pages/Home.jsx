@@ -74,8 +74,70 @@ export default function Home() {
 ============================ */}
 <div className="rounded-xl overflow-hidden shadow-lg">
 {/* swiper component here */}  
-<div>Featured Products</div>
+<Swiper
+    modules={[Navigation, Pagination, Autoplay]}
+    autoplay={{ delay: 3000 }}
+    pagination={{ clickable: true }}
+    navigation
+    loop
+    slidesPerView={1}
+  >
+    {/* SLIDE 1 */}
+    <SwiperSlide>
+      <div
+        className="relative h-64 md:h-96 bg-cover bg-center"
+        style={{ backgroundImage: `url(${hero1})` }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/10" />
+        {/* Content */}
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white drop-shadow-lg">
+            Welcome to MyStore
+          </h1>
+          <p className="mt-3 text-white/90 max-w-xl">
+            Discover premium products curated just for you
+          </p>
+        </div>
+      </div>
+    </SwiperSlide>
 
+
+    {/* SLIDE 2 */}
+    <SwiperSlide>
+      <div
+        className="relative h-64 md:h-96 bg-cover bg-center"
+        style={{ backgroundImage: `url(${hero2})`}}
+      >
+        <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/10" />
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white drop-shadow-lg">
+            Best Deals of the Season
+          </h1>
+          <p className="mt-3 text-white/90 max-w-xl">
+            Save more with exclusive offers and discounts
+          </p>
+        </div>
+      </div>
+    </SwiperSlide>
+    {/* SLIDE 3 */}
+    <SwiperSlide>
+      <div
+        className="relative h-64 md:h-96 bg-cover bg-center"
+        style={{ backgroundImage: `url(${hero3})` }}
+      >
+        <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/40 to-black/10" />
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white drop-shadow-lg">
+            Shop the Latest Products
+          </h1>
+          <p className="mt-3 text-white/90 max-w-xl">
+            Stay ahead with our newest arrivals...
+          </p>
+        </div>
+      </div>
+    </SwiperSlide>
+  </Swiper>
 </div>
 
 
