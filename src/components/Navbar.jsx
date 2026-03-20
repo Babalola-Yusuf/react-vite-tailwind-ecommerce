@@ -7,11 +7,12 @@ import { ShoppingCart, Heart } from 'lucide-react';
 
 export default function Navbar() {
   const { state: cartState } = useContext(CartContext);
-  const { state: wishlistState } = useContext(WishlistContext);
+  const { wishlist = [] } = useContext(WishlistContext) || {};
   const cartCount =
     cartState?.totals?.count ||
     (cartState.cart ? cartState.cart.reduce((s, i) => s + (i.quantity || 0), 0) : 0);
-  const wishlistCount = wishlistState?.wishlist?.length || 0;
+    const wishlistCount = wishlist.length;
+
 
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -64,8 +65,8 @@ export default function Navbar() {
               </span>
             )}
           </Link>
-        </nav>
-      </div>
+        </nav>                                                                                    
+      </div>        
     </header>
   );
 }

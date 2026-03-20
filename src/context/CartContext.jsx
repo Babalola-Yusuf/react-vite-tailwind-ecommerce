@@ -5,7 +5,13 @@ import { toast } from 'react-hot-toast';
 const CartContext = createContext();
 
 const initialState = {
-  cart: JSON.parse(localStorage.getItem('cart')) || [],
+  cart: (() => {
+  try {
+    return JSON.parse(localStorage.getItem('cart')) || [];
+  } catch {
+    return [];
+  }
+})(),
   totals: { count: 0, totalPrice: 0 },
 };
 
